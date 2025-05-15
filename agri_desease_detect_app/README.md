@@ -9,7 +9,7 @@ Projet d'intelligence artificielle intégrée dans une application mobile Flutte
 Architecture modulaire : séparation entre IA (Python) et app mobile (Flutter).
 ci dessos est une image monrant comment le project foctionne 
 
-![Vue d'ensemble](https://raw.githubusercontent.com/ton-utilisateur/ton-repo/main/docs/diagramme.png)
+![Vue d'ensemble](https://drive.google.com/file/d/1AGdJ-6YvDiP25O2Z9FxRRo6oyUoagtDE/view?usp=sharing)
 
 
 ---
