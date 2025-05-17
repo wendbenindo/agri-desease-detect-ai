@@ -10,6 +10,7 @@ __pycache__/
 *.tflite
 
 # Données
+test
 data
 data/raw/
 data/processed/
