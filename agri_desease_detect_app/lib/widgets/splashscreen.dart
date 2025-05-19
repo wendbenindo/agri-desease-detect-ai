@@ -1,7 +1,7 @@
-// File: lib/widgets/splash_screen.dart
+import 'package:agri_desease_detect_app/main.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-
+import 'package:video_player/video_player.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,10 +11,20 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  late VideoPlayerController _controller;
+
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 3), () {
+
+    _controller = VideoPlayerController.asset('assets/videos/splash_bg.mp4')
+      ..initialize().then((_) {
+        setState(() {});
+        _controller.setLooping(true);
+        _controller.play();
+      });
+
+    Timer(const Duration(seconds: 8), () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const NavigationController()),
       );
@@ -22,29 +32,68 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF15803D), // Tailwind green-700
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/logo.png', // Assure-toi que le fichier existe dans pubspec.yaml
-              height: 120,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'TipTiga',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          _controller.value.isInitialized
+              ? FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: _controller.value.size.width,
+                    height: _controller.value.size.height,
+                    child: VideoPlayer(_controller),
+                  ),
+                )
+              : Container(color: Colors.black),
+
+          Container(
+            color: Colors.black.withOpacity(0.2),
+          ),
+
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: 160,
+              decoration: const BoxDecoration(
                 color: Colors.white,
-                letterSpacing: 2,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Text(
+                    'TipTiga',
+                    style: TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF15803D),
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Application agricole pour la détection de maladies des plantes.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
