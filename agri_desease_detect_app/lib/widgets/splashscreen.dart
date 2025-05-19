@@ -1,3 +1,4 @@
+// File: lib/widgets/splash_screen.dart
 import 'package:agri_desease_detect_app/main.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -18,13 +19,16 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     _controller = VideoPlayerController.asset('assets/videos/splash_bg.mp4')
+      ..setVolume(0.0) // Désactive le son
       ..initialize().then((_) {
         setState(() {});
         _controller.setLooping(true);
         _controller.play();
       });
 
-    Timer(const Duration(seconds: 8), () {
+    Timer(const Duration(seconds: 7), () {
+      _controller.pause();
+      _controller.dispose();
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const NavigationController()),
       );
@@ -33,7 +37,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (_controller.value.isInitialized) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
