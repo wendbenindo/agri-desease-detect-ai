@@ -1,4 +1,5 @@
 // File: lib/main.dart
+import 'package:agri_desease_detect_app/pages/diagnosticpage.dart';
 import 'package:flutter/material.dart';
 import 'package:agri_desease_detect_app/widgets/theme.dart';
 import 'package:agri_desease_detect_app/widgets/splashscreen.dart';
@@ -35,7 +36,7 @@ class _NavigationControllerState extends State<NavigationController> {
 
   final List<Widget> _pages = const [
     HomePage(),
-    // DetectionPage(),
+    DiagnosticPage(),
     // CommunityPage(),
   ];
 

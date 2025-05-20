@@ -1,5 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:agri_desease_detect_app/pages/diagnosticpage.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -39,7 +41,7 @@ class HomePage extends StatelessWidget {
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0FDF4), // Light green background
+              color: const Color(0xFFF0FDF4),
               borderRadius: BorderRadius.circular(16),
             ),
             padding: const EdgeInsets.all(8),
@@ -135,35 +137,6 @@ class HomePage extends StatelessWidget {
                             SizedBox(height: 4),
                             Text('Diagnostic'),
                           ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            // Prendre une photo
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF15803D),
-                            padding: const EdgeInsets.all(12),
-                            shape: const CircleBorder(),
-                          ),
-                          child: const Icon(Icons.photo_camera, color: Colors.white),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Ouvrir galerie
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            padding: const EdgeInsets.all(12),
-                            shape: const CircleBorder(),
-                            side: const BorderSide(color: Color(0xFF15803D)),
-                          ),
-                          child: const Icon(Icons.image_search_outlined, color: Color(0xFF15803D)),
                         ),
                       ],
                     ),
