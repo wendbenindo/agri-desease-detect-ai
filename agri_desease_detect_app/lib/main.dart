@@ -1,12 +1,27 @@
-// File: lib/main.dart
-import 'package:agri_desease_detect_app/pages/diagnosticpage.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:agri_desease_detect_app/widgets/theme.dart';
 import 'package:agri_desease_detect_app/widgets/splashscreen.dart';
 import 'package:agri_desease_detect_app/pages/homepage.dart';
+import 'package:agri_desease_detect_app/pages/diagnosticpage.dart';
 
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() {
+  try {
+    if (!kIsWeb) {
+      // Sur mobile
+      await dotenv.load(fileName: ".env");
+    } else {
+      // Sur web, charger via les assets
+      await dotenv.load(fileName: "assets/.env");
+    }
+  } catch (e) {
+    debugPrint("Erreur de chargement de .env : $e");
+  }
+
   runApp(const TipTigaApp());
 }
 
@@ -62,8 +77,8 @@ class _NavigationControllerState extends State<NavigationController> {
             label: 'Accueil',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Détection',
+            icon: Icon(Icons.health_and_safety),
+            label: 'Diagnostic',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.groups),

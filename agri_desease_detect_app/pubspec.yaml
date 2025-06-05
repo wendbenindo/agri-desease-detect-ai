@@ -38,6 +38,8 @@ dependencies:
   video_player: ^2.9.5
   carousel_slider: ^5.0.0
   image_picker: ^1.1.2
+  geolocator: ^14.0.1
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +70,7 @@ flutter:
     - assets/images/mildiou.png
     - assets/images/rouille.png
     - assets/images/tache_feuille.png
+    - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

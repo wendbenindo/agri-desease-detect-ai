@@ -29,6 +29,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Désactiver Impeller
+        resValue("bool", "flutter.impeller", "false")
+
     }
 
     buildTypes {

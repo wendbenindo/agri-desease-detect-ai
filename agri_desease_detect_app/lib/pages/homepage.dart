@@ -1,6 +1,9 @@
+
+import 'package:agri_desease_detect_app/model/weather_model.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:agri_desease_detect_app/services/weather_service.dart';
 import 'dart:io';
 
 class HomePage extends StatefulWidget {
@@ -17,6 +20,8 @@ class _HomePageState extends State<HomePage> {
     {'image': 'assets/images/tache_feuille.png', 'nom': 'Tache foliaire'},
   ];
 
+  WeatherModel? _weather;
+
   Future<void> _takePicture() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
@@ -25,6 +30,23 @@ class _HomePageState extends State<HomePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Image capturée pour analyse.')),
       );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWeather();
+  }
+
+  Future<void> _loadWeather() async {
+    try {
+      final weather = await WeatherService().fetchWeather();
+      setState(() {
+        _weather = weather;
+      });
+    } catch (e) {
+      debugPrint('Erreur météo : $e');
     }
   }
 
@@ -187,8 +209,14 @@ class _HomePageState extends State<HomePage> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('32°C', style: Theme.of(context).textTheme.headlineMedium!.copyWith(color: Colors.white)),
-                              const Text('Ciel couvert', style: TextStyle(color: Colors.white70)),
+                              Text(
+                                _weather != null ? '${_weather!.temperature}°C' : '...°C',
+                                style: Theme.of(context).textTheme.headlineMedium!.copyWith(color: Colors.white),
+                              ),
+                              Text(
+                                _weather != null ? _weather!.description : 'Chargement...',
+                                style: const TextStyle(color: Colors.white70),
+                              ),
                             ],
                           ),
                           const Icon(Icons.cloud, size: 40, color: Colors.white),
