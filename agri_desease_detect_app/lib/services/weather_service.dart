@@ -8,11 +8,26 @@ import '../utils/constants.dart';
 class WeatherService {
   Future<WeatherModel> fetchWeather() async {
     final Position position = await _determinePosition();
-    final apiKey = dotenv.env['WEATHER_API_KEY'];
-    final url = Uri.parse('$baseWeatherUrl?lat=...&appid=$apiKey');
 
+    //  Lire la clé API depuis le fichier .env
+    final apiKey = dotenv.env['WEATHER_API_KEY'];
+    if (apiKey == null || apiKey.isEmpty) {
+      throw Exception('Clé API météo non définie.');
+    }
+
+    //  Construire une URL correcte avec lat/lon
+    final url = Uri.parse(
+      '$baseWeatherUrl?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey&units=metric&lang=fr',
+    );
+
+    //  Debug : afficher l’URL
+    print("📡 Appel météo : $url");
 
     final response = await http.get(url);
+
+    //  Debug : afficher code retour + contenu
+    print("Code HTTP : ${response.statusCode}");
+    print("Réponse : ${response.body}");
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
@@ -26,6 +41,7 @@ class WeatherService {
     bool serviceEnabled;
     LocationPermission permission;
 
+    //  Vérifie si le service de localisation est activé
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       throw Exception('Le service de localisation est désactivé.');
@@ -43,6 +59,9 @@ class WeatherService {
       throw Exception('La permission de localisation est définitivement refusée.');
     }
 
-    return await Geolocator.getCurrentPosition();
+    // Récupération de la position
+    final position = await Geolocator.getCurrentPosition();
+    print(" Position récupérée : ${position.latitude}, ${position.longitude}");
+    return position;
   }
 }
