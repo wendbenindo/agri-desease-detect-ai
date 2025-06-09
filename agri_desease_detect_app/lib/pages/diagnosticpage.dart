@@ -1,7 +1,40 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-class DiagnosticPage extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'image_analyse_module.dart'; // module externe à créer
+
+class DiagnosticPage extends StatefulWidget {
   const DiagnosticPage({super.key});
+
+  @override
+  State<DiagnosticPage> createState() => _DiagnosticPageState();
+}
+
+class _DiagnosticPageState extends State<DiagnosticPage> {
+  File? _selectedImage;
+
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  void _startAnalysis() {
+    if (_selectedImage != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ImageAnalysisModule(image: _selectedImage!),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +66,8 @@ class DiagnosticPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+
+            // ✅ Image preview zone
             Container(
               width: double.infinity,
               height: 200,
@@ -41,10 +76,20 @@ class DiagnosticPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.green.shade100),
               ),
-              child: const Center(
-                child: Icon(Icons.image_outlined, size: 60, color: Colors.green),
-              ),
+              child: _selectedImage != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.file(
+                        _selectedImage!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                      ),
+                    )
+                  : const Center(
+                      child: Icon(Icons.image_outlined, size: 60, color: Colors.green),
+                    ),
             ),
+
             const SizedBox(height: 24),
             const Text(
               'Options disponibles :',
@@ -54,14 +99,14 @@ class DiagnosticPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
+
+            // ✅ Boutons de sélection image
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
-                  onPressed: () {
-                    // Action pour prendre une photo
-                  },
-                  icon: const Icon(Icons.photo_camera_back),
+                  onPressed: () => _pickImage(ImageSource.camera),
+                  icon: const Icon(Icons.photo_camera_back, color: Colors.white),
                   label: const Text('Caméra'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF15803D),
@@ -73,9 +118,7 @@ class DiagnosticPage extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    // Action pour uploader une image depuis galerie
-                  },
+                  onPressed: () => _pickImage(ImageSource.gallery),
                   icon: const Icon(Icons.photo_library_outlined),
                   label: const Text('Galerie'),
                   style: ElevatedButton.styleFrom(
@@ -90,6 +133,7 @@ class DiagnosticPage extends StatelessWidget {
                 ),
               ],
             ),
+
             const SizedBox(height: 32),
             const Text(
               'Résultat du diagnostic',
@@ -108,16 +152,34 @@ class DiagnosticPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey.shade300),
               ),
-              child: const Text(
-                'Aucune image analysée pour le moment.',
-                style: TextStyle(color: Colors.black54),
+              child: Text(
+                _selectedImage != null
+                    ? 'Image prête pour analyse.'
+                    : 'Aucune image analysée pour le moment.',
+                style: const TextStyle(color: Colors.black54),
               ),
             ),
+
+            const SizedBox(height: 24),
+
+            // ✅ Bouton "Analyser" si image sélectionnée
+            if (_selectedImage != null)
+              ElevatedButton.icon(
+                onPressed: _startAnalysis,
+                icon: const Icon(Icons.science, color: Colors.white),
+                label: const Text("Lancer l'analyse"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black87,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 }
-
-
