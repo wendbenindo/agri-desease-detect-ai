@@ -49,6 +49,9 @@ dependencies:
   tflite_flutter: ^0.11.0
   # tflite_flutter_helper: ^0.2.0
   image: ^3.3.0
+  google_fonts: ^6.2.1
+  url_launcher: ^6.3.1
+  flutter_phone_direct_caller: ^2.2.1
   # camera: ^0.9.4+5
 
 dev_dependencies:
@@ -81,6 +84,9 @@ flutter:
     - assets/images/mildiou.png
     - assets/images/rouille.png
     - assets/images/tache_feuille.png
+    - assets/images/mil.png
+    - assets/images/mais.png
+    - assets/images/sorgho.png
     - .env
     - assets/model/plant_disease_model.tflite
   #   - images/a_dot_ham.jpeg

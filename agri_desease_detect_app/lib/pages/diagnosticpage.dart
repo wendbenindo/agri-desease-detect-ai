@@ -1,11 +1,12 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'image_analyse_module.dart'; // module externe à créer
+import 'image_analyse_module.dart';
 
 class DiagnosticPage extends StatefulWidget {
-  const DiagnosticPage({super.key});
+  final File? initialImage;
+
+  const DiagnosticPage({super.key, this.initialImage});
 
   @override
   State<DiagnosticPage> createState() => _DiagnosticPageState();
@@ -13,14 +14,26 @@ class DiagnosticPage extends StatefulWidget {
 
 class _DiagnosticPageState extends State<DiagnosticPage> {
   File? _selectedImage;
+  List<File> _history = [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialImage != null) {
+      _selectedImage = widget.initialImage;
+      _history.add(widget.initialImage!);
+    }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: source);
 
     if (pickedFile != null) {
+      final imageFile = File(pickedFile.path);
       setState(() {
-        _selectedImage = File(pickedFile.path);
+        _selectedImage = imageFile;
+        _history.add(imageFile);
       });
     }
   }
@@ -36,6 +49,56 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
     }
   }
 
+  void _removeFromHistory(int index) {
+    setState(() {
+      _history.removeAt(index);
+    });
+  }
+
+  void _showHistoryModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Historique des diagnostics',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF14532D))),
+              const SizedBox(height: 12),
+              _history.isEmpty
+                  ? const Text('Aucun diagnostic pour le moment.')
+                  : SizedBox(
+                      height: 200,
+                      child: ListView.builder(
+                        itemCount: _history.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            leading: Image.file(_history[index], width: 50, height: 50, fit: BoxFit.cover),
+                            title: Text('Image ${index + 1}'),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _removeFromHistory(index),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,42 +106,46 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
         title: const Text(
           'Diagnostic',
           style: TextStyle(
-            color: Color(0xFF15803D),
+            color: Color(0xFF14532D),
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Color(0xFF15803D)),
+        iconTheme: const IconThemeData(color: Color(0xFF14532D)),
         centerTitle: true,
         elevation: 1,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: _showHistoryModal,
+          )
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text(
               'Analyse de votre culture',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF15803D),
+                color: Color(0xFF14532D),
               ),
             ),
             const SizedBox(height: 16),
-
-            // ✅ Image preview zone
             Container(
               width: double.infinity,
-              height: 200,
+              height: 220,
               decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.green.shade100),
+                color: const Color(0xFFE6F4EA),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.green.shade200),
               ),
               child: _selectedImage != null
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(20),
                       child: Image.file(
                         _selectedImage!,
                         fit: BoxFit.cover,
@@ -89,18 +156,10 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                       child: Icon(Icons.image_outlined, size: 60, color: Colors.green),
                     ),
             ),
-
             const SizedBox(height: 24),
-            const Text(
-              'Options disponibles :',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-              ),
-            ),
+            const Text('Options disponibles :',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
             const SizedBox(height: 12),
-
-            // ✅ Boutons de sélection image
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -109,7 +168,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                   icon: const Icon(Icons.photo_camera_back, color: Colors.white),
                   label: const Text('Caméra'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF15803D),
+                    backgroundColor: const Color(0xFF14532D),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(
@@ -123,8 +182,8 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                   label: const Text('Galerie'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF15803D),
-                    side: const BorderSide(color: Color(0xFF15803D)),
+                    foregroundColor: const Color(0xFF14532D),
+                    side: const BorderSide(color: Color(0xFF14532D)),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -133,16 +192,9 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                 ),
               ],
             ),
-
             const SizedBox(height: 32),
-            const Text(
-              'Résultat du diagnostic',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
+            const Text('Résultat du diagnostic',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -159,10 +211,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                 style: const TextStyle(color: Colors.black54),
               ),
             ),
-
             const SizedBox(height: 24),
-
-            // ✅ Bouton "Analyser" si image sélectionnée
             if (_selectedImage != null)
               ElevatedButton.icon(
                 onPressed: _startAnalysis,
@@ -171,7 +220,8 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black87,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
