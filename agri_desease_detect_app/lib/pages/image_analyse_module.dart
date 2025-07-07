@@ -14,8 +14,9 @@ class ImageAnalysisModule extends StatefulWidget {
 }
 
 class _ImageAnalysisModuleState extends State<ImageAnalysisModule> {
-  String _result = 'Analyse en cours...';
+  String _result = '';
   bool _isLoading = true;
+  int _currentStep = 0;
 
   final List<String> _classNames = [
     'Healthy',
@@ -29,7 +30,15 @@ class _ImageAnalysisModuleState extends State<ImageAnalysisModule> {
   @override
   void initState() {
     super.initState();
-    _analyzeImage();
+    _startAnalysisProcess();
+  }
+
+  Future<void> _startAnalysisProcess() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() => _currentStep = 1);
+    await Future.delayed(const Duration(milliseconds: 500));
+    await _analyzeImage();
+    setState(() => _currentStep = 3);
   }
 
   Future<void> _analyzeImage() async {
@@ -38,18 +47,12 @@ class _ImageAnalysisModuleState extends State<ImageAnalysisModule> {
 
       final imageBytes = await widget.image.readAsBytes();
       img.Image? oriImage = img.decodeImage(imageBytes);
-      if (oriImage == null) {
-        setState(() {
-          _result = 'Erreur : image illisible.';
-          _isLoading = false;
-        });
-        return;
-      }
+      if (oriImage == null) throw Exception("Image illisible");
 
-      // Redimensionnement à 224x224 (MobileNet input size)
+      setState(() => _currentStep = 2);
+
       img.Image resizedImage = img.copyResize(oriImage, width: 224, height: 224);
 
-      // Transformation image en Float32List normalisée [0, 1]
       Float32List input = Float32List(224 * 224 * 3);
       int index = 0;
 
@@ -62,14 +65,11 @@ class _ImageAnalysisModuleState extends State<ImageAnalysisModule> {
         }
       }
 
-      // Formater en [1, 224, 224, 3] pour l'entrée
-      final inputShape = interpreter.getInputTensor(0).shape;
-      final inputTensor = input.buffer.asFloat32List();
-      final inputBuffer = inputTensor.reshape([1, 224, 224, 3]);
-
+      final inputBuffer = input.buffer.asFloat32List().reshape([1, 224, 224, 3]);
       final output = List.filled(_classNames.length, 0.0).reshape([1, _classNames.length]);
 
       interpreter.run(inputBuffer, output);
+      interpreter.close();
 
       final result = output[0] as List<double>;
       final maxProb = result.reduce((a, b) => a > b ? a : b);
@@ -77,11 +77,9 @@ class _ImageAnalysisModuleState extends State<ImageAnalysisModule> {
       final predictedClass = _classNames[predictedIndex];
 
       setState(() {
-        _result = 'Résultat : $predictedClass\nConfiance : ${(maxProb * 100).toStringAsFixed(2)}%';
+        _result = '🌿 Classe prédite : $predictedClass\n🔬 Confiance : ${(maxProb * 100).toStringAsFixed(2)}%';
         _isLoading = false;
       });
-
-      interpreter.close();
     } catch (e) {
       setState(() {
         _result = 'Erreur pendant l’analyse : $e';
@@ -90,27 +88,78 @@ class _ImageAnalysisModuleState extends State<ImageAnalysisModule> {
     }
   }
 
+  Widget _buildStep(int step, String label) {
+    bool isCompleted = _currentStep > step;
+    bool isCurrent = _currentStep == step;
+
+    return Row(
+      children: [
+        Icon(
+          isCompleted
+              ? Icons.check_circle
+              : isCurrent
+                  ? Icons.autorenew
+                  : Icons.radio_button_unchecked,
+          color: const Color(0xFF15803D),
+        ),
+        const SizedBox(width: 8),
+        Text(label, style: const TextStyle(fontSize: 14, color: Colors.black87)),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Analyse de l’image'),
-        backgroundColor: Colors.black,
+        title: const Text('Analyse de l’image',
+            style: TextStyle(color: Color(0xFF15803D), fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Color(0xFF15803D)),
+        centerTitle: true,
+        elevation: 1,
       ),
       backgroundColor: Colors.white,
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.file(widget.image, width: 250),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.file(widget.image, height: 250, fit: BoxFit.cover),
+            ),
             const SizedBox(height: 24),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : Text(
-                    _result,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
+            const Text('Étapes de traitement',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildStep(0, 'Chargement de l’image'),
+                _buildStep(1, 'Préparation des données'),
+                _buildStep(2, 'Exécution du modèle'),
+                _buildStep(3, 'Affichage du résultat'),
+              ],
+            ),
+            const SizedBox(height: 24),
+            if (_isLoading)
+              const CircularProgressIndicator(color: Color(0xFF15803D))
+            else
+              Container(
+                padding: const EdgeInsets.all(16),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDF4),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF15803D).withOpacity(0.4)),
+                ),
+                child: Text(
+                  _result,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+                ),
+              ),
           ],
         ),
       ),
