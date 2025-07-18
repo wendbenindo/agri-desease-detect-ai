@@ -20,3 +20,4 @@ data/processed/
 .venv/
 env/
 venv/
+data_split/
