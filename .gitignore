@@ -21,3 +21,4 @@ data/processed/
 env/
 venv/
 data_split/
+preprocessing_output/
