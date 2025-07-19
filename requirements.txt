@@ -2,3 +2,6 @@ tensorflow
 Pillow
 scikit-learn
 matplotlib
+seaborn
+opencv-python
+psutil
